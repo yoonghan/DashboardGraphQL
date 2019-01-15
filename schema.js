@@ -12,84 +12,43 @@ var {
   introspectSchema,
   mergeSchemas
 } = require ('graphql-tools');
-var Store = require('./stores');
-var Agent = require('./agents');
-var Region = require('./regions');
-var Country = require('./country');
+var Store = require('./domain/store');
+var Agent = require('./domain/agent');
+var Region = require('./domain/region');
+var Country = require('./domain/country');
+var Inventory = require('./domain/inventory');
+var PowerMgmt = require('./domain/powermgmt');
 
-const linkTypeDefs = `
-  extend type Country {
-    regions: [Region]
-  }
-  extend type Region {
-    stores: [Store]
-  }
-  extend type Store {
-    agents: [Agent]
-  }
-`;
+const schemaLink = mergeInfo => Object.assign({}, Country.linkFunc(mergeInfo), Region.linkFunc(mergeInfo), Store.linkFunc(mergeInfo), Agent.linkFunc(mergeInfo));
+const schemaRoot = Object.assign({}, Store.func, Agent.func, Region.func, Country.func, Inventory.func, PowerMgmt.func);
 
 const schema = mergeSchemas({
-  schemas: [Store.schema, Agent.schema, Region.schema, Country.schema, linkTypeDefs],
-  resolvers: mergeInfo => ({
-    Country: {
-      regions: {
-        fragment: `fragment CountryFragment on Fragment { id }`,
-        resolve(parent, args, context, info) {
-          const regionIds = parent.regionIds;
-          return mergeInfo.delegateToSchema(
-            {
-              schema: Region.schema,
-              operation: 'query',
-              fieldName: 'regionsByIds',
-              args: { ids: regionIds },
-              context: context,
-              info: info
-            }
-          );
-        },
-      },
-    },
-    Region: {
-      stores: {
-        fragment: `fragment RegionFragment on Fragment { id }`,
-        resolve(parent, args, context, info) {
-          const storeIds = parent.storeIds;
-          return mergeInfo.delegateToSchema(
-            {
-              schema: Store.schema,
-              operation: 'query',
-              fieldName: 'storeByIds',
-              args: { ids: storeIds },
-              context: context,
-              info: info
-            }
-          );
-        },
-      },
-    },
-    Store: {
-      agents: {
-        fragment: `fragment StoreFragment on Fragment { id }`,
-        resolve(parent, args, context, info) {
-          const storeId = parent.id;
-          return mergeInfo.delegateToSchema(
-            {
-              schema: Agent.schema,
-              operation: 'query',
-              fieldName: 'agentByStoreId',
-              args: { storeId: storeId },
-              context: context,
-              info: info
-            }
-          );
-        },
-      },
-    }
-  })
-});
+  schemas: [
+    Store.schema, Agent.schema, Region.schema, Country.schema, Inventory.schema, PowerMgmt.schema,
+    Country.linkSchema, Region.linkSchema, Store.linkSchema, Agent.linkSchema
+  ],
+  resolvers: schemaLink
 
-const schemaRoot = Object.assign({}, Store.funct, Agent.funct, Region.funct, Country.funct)
+  //   Agent: {
+  //     inventory: {
+  //       fragment: `fragment AgentFragment on Fragment { id }`,
+  //       resolve(parent, args, context, info) {
+  //         const agentId = parent.id;
+  //         return mergeInfo.delegateToSchema(
+  //           {
+  //             schema: Inventory.schema,
+  //             operation: 'query',
+  //             fieldName: 'inventoryByAgentId',
+  //             args: { agentId: agentId },
+  //             context: context,
+  //             info: info
+  //           }
+  //         );
+  //       },
+  //     },
+  //   }
+  //})
+});
 
 module.exports = {
   schema: schema,

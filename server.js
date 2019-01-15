@@ -26,6 +26,7 @@ var GraphQLApp = function(argPort, argCorsEnable) {
       rootValue: schemaRoot,
       graphiql: true //Set true to enable a GraphQL Ui.
   }));
+  
   app.listen(argPort, () => console.log(`Express GraphQL Server Now Running On localhost:${argPort}${DOMAIN}`));
 }
 
