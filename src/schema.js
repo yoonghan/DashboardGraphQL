@@ -28,29 +28,9 @@ const schema = mergeSchemas({
     Country.linkSchema, Region.linkSchema, Store.linkSchema, Agent.linkSchema
   ],
   resolvers: schemaLink
-
-  //   Agent: {
-  //     inventory: {
-  //       fragment: `fragment AgentFragment on Fragment { id }`,
-  //       resolve(parent, args, context, info) {
-  //         const agentId = parent.id;
-  //         return mergeInfo.delegateToSchema(
-  //           {
-  //             schema: Inventory.schema,
-  //             operation: 'query',
-  //             fieldName: 'inventoryByAgentId',
-  //             args: { agentId: agentId },
-  //             context: context,
-  //             info: info
-  //           }
-  //         );
-  //       },
-  //     },
-  //   }
-  //})
 });
 
 module.exports = {
-  schema: schema,
+  schema:schema,
   schemaRoot: schemaRoot
-}
+};
