@@ -1,3 +1,5 @@
+const cors = require('micro-cors')();
+const micro = require('micro');
 const { ApolloServer, gql } = require('apollo-server-micro')
 const {schema, schemaRoot} = require('./src/schema');
 
@@ -5,11 +7,15 @@ const server = new ApolloServer({
   schema:schema,
   rootValue:schemaRoot,
   introspection: true,
-  playground: true
+  playground: true, //Allow anyone to query
 });
 
-module.exports = server.createHandler({ path: '/api' })
+const optionsHandler = (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.end();
+    return;
+  }
+  return server.createHandler({ path: '/api' })(req, res);
+};
 
-/*server.listen().then(({ url }) => {
-  console.log("Server ready at " + url);
-});*/
+module.exports = cors(optionsHandler);
